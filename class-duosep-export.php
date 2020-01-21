@@ -1,6 +1,22 @@
 <?php
+/**
+ * Export page into xml.
+ *
+ * @package SimpleExportPage
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Class Duosep Export.
+ */
 class Duosep_Export {
 
+	/**
+	 * Export page by post ids.
+	 *
+	 * @param  array $post_ids Array of post ids.
+	 */
 	public function export_page( $post_ids ) {
 		global $wpdb, $post;
 
@@ -19,7 +35,6 @@ class Duosep_Export {
 
 		// Start generate export code.
 
-		ob_start();
 		echo '<?xml version="1.0" encoding="' . get_bloginfo( 'charset' ) . "\" ?>\n";
 
 		the_generator( 'export' );
@@ -89,7 +104,7 @@ class Duosep_Export {
 								<wp:post_type><?php echo $this->wxr_cdata( $post->post_type ); ?></wp:post_type>
 								<wp:post_password><?php echo $this->wxr_cdata( $post->post_password ); ?></wp:post_password>
 								<wp:is_sticky><?php echo intval( $is_sticky ); ?></wp:is_sticky>
-								<?php if ( $post->post_type == 'attachment' ) : ?>
+								<?php if ( 'attachment' === $post->post_type ) : ?>
 									<wp:attachment_url><?php echo $this->wxr_cdata( wp_get_attachment_url( $post->ID ) ); ?></wp:attachment_url>
 								<?php endif; ?>
 								<?php $this->wxr_post_taxonomy(); ?>
@@ -141,20 +156,30 @@ class Duosep_Export {
 			</channel>
 		</rss>
 		<?php
-		return ob_get_clean();
 	}
 
-	function wxr_cdata( $str ) {
+	/**
+	 * Wrap data with CDATA.
+	 *
+	 * @param  string $str String of data.
+	 * @return string      String of data.
+	 */
+	private function wxr_cdata( $str ) {
 		if ( ! seems_utf8( $str ) ) {
 			$str = utf8_encode( $str );
 		}
-		// $str = ent2ncr(esc_html($str));
+
 		$str = '<![CDATA[' . str_replace( ']]>', ']]]]><![CDATA[>', $str ) . ']]>';
 
 		return $str;
 	}
 
-	function wxr_site_url() {
+	/**
+	 * Get site url.
+	 *
+	 * @return string Site URL.
+	 */
+	private function wxr_site_url() {
 		if ( is_multisite() ) {
 			// Multisite: the base URL.
 			return network_home_url();
@@ -164,7 +189,13 @@ class Duosep_Export {
 		}
 	}
 
-	function wxr_cat_name( $category ) {
+	/**
+	 * Get category name.
+	 *
+	 * @param  WP_Term $category Category term object.
+	 * @return void
+	 */
+	private function wxr_cat_name( $category ) {
 		if ( empty( $category->name ) ) {
 			return;
 		}
@@ -172,7 +203,13 @@ class Duosep_Export {
 		echo '<wp:cat_name>' . $this->wxr_cdata( $category->name ) . "</wp:cat_name>\n";
 	}
 
-	function wxr_category_description( $category ) {
+	/**
+	 * Get category description.
+	 *
+	 * @param  WP_Term $category Category term object.
+	 * @return void
+	 */
+	private function wxr_category_description( $category ) {
 		if ( empty( $category->description ) ) {
 			return;
 		}
@@ -180,7 +217,13 @@ class Duosep_Export {
 		echo '<wp:category_description>' . $this->wxr_cdata( $category->description ) . "</wp:category_description>\n";
 	}
 
-	function wxr_tag_name( $tag ) {
+	/**
+	 * Get tag name.
+	 *
+	 * @param  WP_Term $tag Tag term object.
+	 * @return void
+	 */
+	private function wxr_tag_name( $tag ) {
 		if ( empty( $tag->name ) ) {
 			return;
 		}
@@ -188,7 +231,13 @@ class Duosep_Export {
 		echo '<wp:tag_name>' . $this->wxr_cdata( $tag->name ) . "</wp:tag_name>\n";
 	}
 
-	function wxr_tag_description( $tag ) {
+	/**
+	 * Get tag description.
+	 *
+	 * @param  WP_Term $tag Tag term object.
+	 * @return void
+	 */
+	private function wxr_tag_description( $tag ) {
 		if ( empty( $tag->description ) ) {
 			return;
 		}
@@ -196,7 +245,13 @@ class Duosep_Export {
 		echo '<wp:tag_description>' . $this->wxr_cdata( $tag->description ) . "</wp:tag_description>\n";
 	}
 
-	function wxr_term_name( $term ) {
+	/**
+	 * Get term name.
+	 *
+	 * @param  WP_Term $term Term object.
+	 * @return void
+	 */
+	private function wxr_term_name( $term ) {
 		if ( empty( $term->name ) ) {
 			return;
 		}
@@ -204,7 +259,13 @@ class Duosep_Export {
 		echo '<wp:term_name>' . $this->wxr_cdata( $term->name ) . "</wp:term_name>\n";
 	}
 
-	function wxr_term_description( $term ) {
+	/**
+	 * Get term description.
+	 *
+	 * @param  WP_Term $term Term object.
+	 * @return void
+	 */
+	private function wxr_term_description( $term ) {
 		if ( empty( $term->description ) ) {
 			return;
 		}
@@ -212,7 +273,13 @@ class Duosep_Export {
 		echo "\t\t<wp:term_description>" . $this->wxr_cdata( $term->description ) . "</wp:term_description>\n";
 	}
 
-	function wxr_term_meta( $term ) {
+	/**
+	 * Get term meta.
+	 *
+	 * @param  WP_Term $term Term object.
+	 * @return void
+	 */
+	private function wxr_term_meta( $term ) {
 		global $wpdb;
 
 		$termmeta = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $wpdb->termmeta WHERE term_id = %d", $term->term_id ) );
@@ -223,7 +290,12 @@ class Duosep_Export {
 		}
 	}
 
-	function wxr_post_taxonomy() {
+	/**
+	 * Get post taxonomy.
+	 *
+	 * @return void
+	 */
+	private function wxr_post_taxonomy() {
 		$post = get_post();
 
 		$taxonomies = get_object_taxonomies( $post->post_type );
