@@ -1,8 +1,10 @@
 <?php
 /**
  * Export page into xml.
+ * This class is modified version of export class in the WordPress Core file.
  *
  * @package SimpleExportPage
+ * @see wp-admin/includes/export.php
  */
 
 defined( 'ABSPATH' ) || exit;
